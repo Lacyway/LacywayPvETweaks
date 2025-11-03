@@ -1,6 +1,9 @@
 {
-  "refChanges": false, // makes ref's quests more PvE friendly
-  "removeTransitQuests": false, // changes all transit quests to be normal quests
-  "removeRecipes": false, // removes redundant recipes, e.g. arena crates
-  "enableLabyrinth": false // enables labyrinth on the map screen, removing the need to transit
+    "refChanges": false, // makes ref's quests more PvE friendly
+    "removeTransitQuests": false, // changes all transit quests to be normal quests
+    "removeRecipes": false, // removes redundant recipes, e.g. arena crates
+    "enableLabyrinth": false, // enables labyrinth on the map screen, removing the need to transit
+    "questTweaks": false, // makes several vanilla quests less grindy/obnoxious
+    "addRecipes": false, // adds new recipes to the hideout
+    "removeMapLimitations": false // removes map limitations from certain quests
 }
