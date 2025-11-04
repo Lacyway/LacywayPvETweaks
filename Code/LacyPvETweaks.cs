@@ -22,7 +22,7 @@ public record ModMetadata : AbstractModMetadata
     public override string Name { get; init; } = "Lacyway's PvE Tweaks";
     public override string Author { get; init; } = "Lacyway";
     public override List<string>? Contributors { get; init; }
-    public override SemanticVersioning.Version Version { get; init; } = new("1.0.5");
+    public override SemanticVersioning.Version Version { get; init; } = new("1.0.6");
     public override SemanticVersioning.Range SptVersion { get; init; } = new("~4.0.0");
     public override List<string>? Incompatibilities { get; init; }
     public override Dictionary<string, SemanticVersioning.Range>? ModDependencies { get; init; }
@@ -205,6 +205,7 @@ public class LacyPvETweaks(ISptLogger<LacyPvETweaks> logger,
             NeedFuelForAllProductionTime = false,
             ProductionLimitCount = 0,
             ProductionTime = 3600,
+            Continuous = false,
             Requirements = [
                 new Requirement() {
                     AreaType = 11,
