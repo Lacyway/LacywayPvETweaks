@@ -6,5 +6,6 @@
     "questTweaks": false, // makes several vanilla quests less grindy/obnoxious
     "addRecipes": false, // adds new recipes to the hideout
     "removeMapLimitations": false, // removes map limitations from certain quests
-    "tweakExtracts": false // makes certain extracts less restricted (currently only Labyrinth)
+    "tweakExtracts": false, // makes certain extracts less restricted (currently only Labyrinth)
+    "hideoutCustomizations": false // allows you to unlock otherwise unobtainable customizations for the hideout
 }
