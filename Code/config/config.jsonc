@@ -5,5 +5,6 @@
     "enableLabyrinth": false, // enables labyrinth on the map screen, removing the need to transit
     "questTweaks": false, // makes several vanilla quests less grindy/obnoxious
     "addRecipes": false, // adds new recipes to the hideout
-    "removeMapLimitations": false // removes map limitations from certain quests
+    "removeMapLimitations": false, // removes map limitations from certain quests
+    "tweakExtracts": false // makes certain extracts less restricted (currently only Labyrinth)
 }
