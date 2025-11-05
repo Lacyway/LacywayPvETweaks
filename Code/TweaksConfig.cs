@@ -45,4 +45,10 @@ public record TweaksConfig
     /// </summary>
     [JsonPropertyName("removeMapLimitations")]
     public bool RemoveMapLimitations { get; set; }
+
+    /// <summary>
+    /// Makes certain extracts less restricted
+    /// </summary>
+    [JsonPropertyName("tweakExtracts")]
+    public bool TweakExtracts { get; set; }
 }

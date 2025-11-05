@@ -4,6 +4,7 @@ using SPTarkov.Server.Core.Helpers;
 using SPTarkov.Server.Core.Models.Common;
 using SPTarkov.Server.Core.Models.Eft.Common.Tables;
 using SPTarkov.Server.Core.Models.Eft.Hideout;
+using SPTarkov.Server.Core.Models.Enums;
 using SPTarkov.Server.Core.Models.Enums.Hideout;
 using SPTarkov.Server.Core.Models.Spt.Config;
 using SPTarkov.Server.Core.Models.Spt.Mod;
@@ -22,7 +23,7 @@ public record ModMetadata : AbstractModMetadata
     public override string Name { get; init; } = "Lacyway's PvE Tweaks";
     public override string Author { get; init; } = "Lacyway";
     public override List<string>? Contributors { get; init; }
-    public override SemanticVersioning.Version Version { get; init; } = new("1.0.6");
+    public override SemanticVersioning.Version Version { get; init; } = new("1.0.7");
     public override SemanticVersioning.Range SptVersion { get; init; } = new("~4.0.0");
     public override List<string>? Incompatibilities { get; init; }
     public override Dictionary<string, SemanticVersioning.Range>? ModDependencies { get; init; }
@@ -114,11 +115,37 @@ public class LacyPvETweaks(ISptLogger<LacyPvETweaks> logger,
             RemoveMapLimitations();
         }
 
+        if (config.TweakExtracts)
+        {
+            logger.Debug("Tweaking extracts");
+            TweakExtracts();
+        }
+
         logger.Success("[Lacyway's PvE Tweaks] Successfully loaded!" +
             $"\nRef: {config.RefChanges}, Transits: {config.RemoveTransitQuests}, Recipes: {config.RemoveRecipes}," +
-            $" Labyrinth: {config.EnableLabyrinth}, QuestsTweaks: {config.QuestTweaks}, AddRecipes: {config.AddRecipes}");
+            $" Labyrinth: {config.EnableLabyrinth}, QuestsTweaks: {config.QuestTweaks}, AddRecipes: {config.AddRecipes}," +
+            $" Remove Map Limits: {config.RemoveMapLimitations}, TweakExtracts: {config.TweakExtracts}");
 
         return Task.CompletedTask;
+    }
+
+    private void TweakExtracts()
+    {
+        var location = databaseService.GetLocation("labyrinth");
+        var extract = location?.Base.Exits
+            .SingleOrDefault(e => e.Name == "labir_exit");
+        if (extract != null)
+        {
+            logger.Debug("Found exfil");
+            extract.MinTime = 300;
+            extract.MinTimePVE = 300;
+            extract.MaxTime = 0;
+            extract.MaxTimePVE = 0;
+            extract.ExfiltrationType = ExfiltrationType.Individual;
+            return;
+        }
+
+        logger.Error("Could not find the Labyrinth extract. Did you modify your files?");
     }
 
     private void RemoveMapLimitations()
