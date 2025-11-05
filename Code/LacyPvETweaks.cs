@@ -2,6 +2,7 @@ using SPTarkov.DI.Annotations;
 using SPTarkov.Server.Core.DI;
 using SPTarkov.Server.Core.Helpers;
 using SPTarkov.Server.Core.Models.Common;
+using SPTarkov.Server.Core.Models.Eft.Common;
 using SPTarkov.Server.Core.Models.Eft.Common.Tables;
 using SPTarkov.Server.Core.Models.Eft.Hideout;
 using SPTarkov.Server.Core.Models.Enums;
@@ -23,7 +24,7 @@ public record ModMetadata : AbstractModMetadata
     public override string Name { get; init; } = "Lacyway's PvE Tweaks";
     public override string Author { get; init; } = "Lacyway";
     public override List<string>? Contributors { get; init; }
-    public override SemanticVersioning.Version Version { get; init; } = new("1.0.7");
+    public override SemanticVersioning.Version Version { get; init; } = new("1.0.8");
     public override SemanticVersioning.Range SptVersion { get; init; } = new("~4.0.0");
     public override List<string>? Incompatibilities { get; init; }
     public override Dictionary<string, SemanticVersioning.Range>? ModDependencies { get; init; }
@@ -121,12 +122,84 @@ public class LacyPvETweaks(ISptLogger<LacyPvETweaks> logger,
             TweakExtracts();
         }
 
+        if (config.HideoutCustomizations)
+        {
+            logger.Debug("Adding unlockable customizations");
+            UnlockableCustomizations();
+        }
+
         logger.Success("[Lacyway's PvE Tweaks] Successfully loaded!" +
             $"\nRef: {config.RefChanges}, Transits: {config.RemoveTransitQuests}, Recipes: {config.RemoveRecipes}," +
             $" Labyrinth: {config.EnableLabyrinth}, QuestsTweaks: {config.QuestTweaks}, AddRecipes: {config.AddRecipes}," +
-            $" Remove Map Limits: {config.RemoveMapLimitations}, TweakExtracts: {config.TweakExtracts}");
+            $" Remove Map Limits: {config.RemoveMapLimitations}, TweakExtracts: {config.TweakExtracts}, HideoutCustomizatios: {config.HideoutCustomizations}");
 
         return Task.CompletedTask;
+    }
+
+    private void UnlockableCustomizations()
+    {
+        var customizations = databaseService.GetHideout().Customisation.Globals;
+        var globals = databaseServer.GetTables().Locales.Global;
+
+        if (customizations == null)
+        {
+            return;
+        }
+
+        var labyrinth = customizations
+            .Where(c => c.SystemName.EndsWith("_Labyrinth"));
+        var labyrinthIds = labyrinth
+            .Select(c => c.Conditions[0].Id);
+
+        foreach (var customization in labyrinth)
+        {
+            var condition = customization.Conditions[0];
+            condition.ConditionType = "Quest";
+            condition.AvailableAfter = 0;
+            condition.Dispersion = 0;
+            condition.GlobalQuestCounterId = "";
+            condition.Target = new(null, "67a097379f2068e74603c6ac");
+            condition.Status = [QuestStatusEnum.Success];
+        }
+
+        var kindergarten = customizations
+            .Where(c => c.SystemName.EndsWith("_Kindergarten"));
+        var kindergartensId = kindergarten
+            .Select(c => c.Conditions[0].Id);
+
+        foreach (var customization in kindergarten)
+        {
+            var condition = customization.Conditions[0];
+            condition.ConditionType = "Level";
+            condition.AvailableAfter = 0;
+            condition.Dispersion = 0;
+            condition.GlobalQuestCounterId = "";
+            condition.Value = 50;
+            condition.CompareMethod = ">=";
+        }
+
+        foreach ((var locale, var lazyLoadedValue) in globals)
+        {
+            lazyLoadedValue.AddTransformer(localeData =>
+            {
+                if (localeData is null)
+                {
+                    return localeData;
+                }
+
+                foreach (var conditionId in labyrinthIds)
+                {
+                    localeData[conditionId] = "Complete the task Indisputable Authority";
+                }
+
+                foreach (var conditionId in kindergartensId)
+                {
+                    localeData[conditionId] = "Reach level 50 on your PMC character";
+                }
+
+                return localeData;
+            });
+        }
     }
 
     private void TweakExtracts()

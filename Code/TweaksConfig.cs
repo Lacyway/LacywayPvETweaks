@@ -51,4 +51,10 @@ public record TweaksConfig
     /// </summary>
     [JsonPropertyName("tweakExtracts")]
     public bool TweakExtracts { get; set; }
+
+    /// <summary>
+    /// Allows you to unlock otherwise unobtainable customizations for the hideout
+    /// </summary>
+    [JsonPropertyName("hideoutCustomizations")]
+    public bool HideoutCustomizations { get; set; }
 }
