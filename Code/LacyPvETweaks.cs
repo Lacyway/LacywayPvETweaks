@@ -388,7 +388,7 @@ public class LacyPvETweaks(ISptLogger<LacyPvETweaks> logger,
         var mallCopCond = mallCop.Conditions.AvailableForFinish?.FirstOrDefault();
         if (mallCopCond != null)
         {
-            mallCopCond.Value = 10;
+            mallCopCond.Value = 5;
         }
     }
 
