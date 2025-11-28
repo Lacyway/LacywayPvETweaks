@@ -24,7 +24,7 @@ public record ModMetadata : AbstractModMetadata
     public override string Name { get; init; } = "Lacyway's PvE Tweaks";
     public override string Author { get; init; } = "Lacyway";
     public override List<string>? Contributors { get; init; }
-    public override SemanticVersioning.Version Version { get; init; } = new("1.0.8");
+    public override SemanticVersioning.Version Version { get; init; } = new("1.0.9");
     public override SemanticVersioning.Range SptVersion { get; init; } = new("~4.0.0");
     public override List<string>? Incompatibilities { get; init; }
     public override Dictionary<string, SemanticVersioning.Range>? ModDependencies { get; init; }
@@ -136,6 +136,9 @@ public class LacyPvETweaks(ISptLogger<LacyPvETweaks> logger,
         return Task.CompletedTask;
     }
 
+    /// <summary>
+    /// Allows the player to unlock otherwise not unlockable customizations for the hideout
+    /// </summary>
     private void UnlockableCustomizations()
     {
         var customizations = databaseService.GetHideout().Customisation.Globals;
@@ -202,6 +205,9 @@ public class LacyPvETweaks(ISptLogger<LacyPvETweaks> logger,
         }
     }
 
+    /// <summary>
+    /// Tweaks some extracts to be less restrictive
+    /// </summary>
     private void TweakExtracts()
     {
         var location = databaseService.GetLocation("labyrinth");
@@ -221,6 +227,9 @@ public class LacyPvETweaks(ISptLogger<LacyPvETweaks> logger,
         logger.Error("Could not find the Labyrinth extract. Did you modify your files?");
     }
 
+    /// <summary>
+    /// Removes map limitations from some quests
+    /// </summary>
     private void RemoveMapLimitations()
     {
         var quests = databaseService.GetQuests();
@@ -354,11 +363,32 @@ public class LacyPvETweaks(ISptLogger<LacyPvETweaks> logger,
             testDrivePt3Cond.Value = 5;
         }
 
+        var testDrivePt4 = quests["6574e0dedc0d635f633a5805"];
+        var testDrivePt4Cond = testDrivePt4.Conditions.AvailableForFinish?.FirstOrDefault();
+        if (testDrivePt4Cond != null)
+        {
+            testDrivePt4Cond.Value = 10;
+        }
+
+        var testDrivePt5 = quests["669fa3a40c828825de06d6a1"];
+        var testDrivePt5Cond = testDrivePt5.Conditions.AvailableForFinish?.FirstOrDefault();
+        if (testDrivePt5Cond != null)
+        {
+            testDrivePt5Cond.Value = 25;
+        }
+
         var hunter = quests["600302d73b897b11364cd161"];
         var hunterCond = hunter.Conditions.AvailableForFinish?.FirstOrDefault();
         if (hunterCond != null)
         {
             hunterCond.Value = 10;
+        }
+
+        var mallCop = quests["64e7b99017ab941a6f7bf9d7"];
+        var mallCopCond = mallCop.Conditions.AvailableForFinish?.FirstOrDefault();
+        if (mallCopCond != null)
+        {
+            mallCopCond.Value = 10;
         }
     }
 
