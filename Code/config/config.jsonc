@@ -7,5 +7,6 @@
     "addRecipes": false, // adds new recipes to the hideout
     "removeMapLimitations": false, // removes map limitations from certain quests
     "tweakExtracts": false, // makes certain extracts less restricted (currently only Labyrinth)
-    "hideoutCustomizations": false // allows you to unlock otherwise unobtainable customizations for the hideout
+    "hideoutCustomizations": false, // allows you to unlock otherwise unobtainable customizations for the hideout
+    "tweakAsVal": false // makes the vss/val not overheat by reducing the heat per shot, and nerfing the heat per shot on various 9x39 ammo
 }

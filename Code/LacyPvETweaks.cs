@@ -128,12 +128,99 @@ public class LacyPvETweaks(ISptLogger<LacyPvETweaks> logger,
             UnlockableCustomizations();
         }
 
+        if (config.TweakASVal)
+        {
+            logger.Debug("Tweaking the AS VAL");
+            TweakASVal();
+        }
+
         logger.Success("[Lacyway's PvE Tweaks] Successfully loaded!" +
             $"\nRef: {config.RefChanges}, Transits: {config.RemoveTransitQuests}, Recipes: {config.RemoveRecipes}," +
             $" Labyrinth: {config.EnableLabyrinth}, QuestsTweaks: {config.QuestTweaks}, AddRecipes: {config.AddRecipes}," +
-            $" Remove Map Limits: {config.RemoveMapLimitations}, TweakExtracts: {config.TweakExtracts}, HideoutCustomizatios: {config.HideoutCustomizations}");
+            $" Remove Map Limits: {config.RemoveMapLimitations}, TweakExtracts: {config.TweakExtracts}, HideoutCustomizations: {config.HideoutCustomizations}," +
+            $" TweakASVal: {config.TweakASVal}");
 
         return Task.CompletedTask;
+    }
+
+    /// <summary>
+    /// Tweaks the AS VAL to not be a volcano
+    /// </summary>
+    /// <remarks>Based on the values of the old mod 'Make Val VSS great again'</remarks>
+    private void TweakASVal()
+    {
+        var items = databaseService.GetItems();
+
+        const float heatByShot = 2.17f;
+        const float gunFactor = 0.98f;
+        const float heatSp5 = 1.273f;
+        const float heatSpt6 = 1.34f;
+        const float heatPub9 = 1.3f;
+        const float heatSpp = 1.206f;
+
+        var vss = new MongoId("57838ad32459774a17445cd2");
+        var val = new MongoId("57c44b372459772d2b39b8ce");
+
+        var sp5 = new MongoId("57a0dfb82459774d3078b56c");
+        var sp6 = new MongoId("57a0e5022459774d1673f889");
+        var pub9 = new MongoId("61962d879bb3d20b0946d385");
+        var spp = new MongoId("5c0d668f86f7747ccb7f13b2");
+
+        if (items.TryGetValue(vss, out var vssTemplate))
+        {
+            vssTemplate.Properties!.HeatFactorByShot = heatByShot;
+            vssTemplate.Properties!.HeatFactorGun = gunFactor;
+        }
+        else
+        {
+            logger.Error("Unable to find VSS template");
+        }
+
+        if (items.TryGetValue(val, out var valTemplate))
+        {
+            valTemplate.Properties!.HeatFactorByShot = heatByShot;
+            valTemplate.Properties!.HeatFactorGun = gunFactor;
+        }
+        else
+        {
+            logger.Error("Unable to find VAL template");
+        }
+
+        if (items.TryGetValue(sp5, out var sp5Template))
+        {
+            sp5Template.Properties!.HeatFactor = heatSp5;
+        }
+        else
+        {
+            logger.Error("Unable to find SP-5 template");
+        }
+
+        if (items.TryGetValue(sp6, out var sp6Template))
+        {
+            sp6Template.Properties!.HeatFactor = heatSpt6;
+        }
+        else
+        {
+            logger.Error("Unable to find SP-6 template");
+        }
+
+        if (items.TryGetValue(pub9, out var pub9Template))
+        {
+            pub9Template.Properties!.HeatFactor = heatPub9;
+        }
+        else
+        {
+            logger.Error("Unable to find PUB-9 template");
+        }
+
+        if (items.TryGetValue(spp, out var sppTemplate))
+        {
+            sppTemplate.Properties!.HeatFactor = heatSpp;
+        }
+        else
+        {
+            logger.Error("Unable to find SPP template");
+        }
     }
 
     /// <summary>

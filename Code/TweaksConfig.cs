@@ -57,4 +57,10 @@ public record TweaksConfig
     /// </summary>
     [JsonPropertyName("hideoutCustomizations")]
     public bool HideoutCustomizations { get; set; }
+
+    /// <summary>
+    /// Tweaks the AS VAL to not be a molten volcano
+    /// </summary>
+    [JsonPropertyName("tweakAsVal")]
+    public bool TweakASVal { get; set; }
 }
