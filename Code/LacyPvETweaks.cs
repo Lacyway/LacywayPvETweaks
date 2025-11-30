@@ -809,6 +809,8 @@ public class LacyPvETweaks(ISptLogger<LacyPvETweaks> logger,
             DynamicLocale = false,
             Type = "Elimination",
             Value = 1,
+            DoNotResetIfCounterCompleted = true,
+            OneSessionOnly = true,
             Counter = new()
             {
                 Conditions =
@@ -837,6 +839,8 @@ public class LacyPvETweaks(ISptLogger<LacyPvETweaks> logger,
             DynamicLocale = false,
             Type = "Elimination",
             Value = 1,
+            DoNotResetIfCounterCompleted = true,
+            OneSessionOnly = true,
             Counter = new()
             {
                 Conditions =
@@ -865,6 +869,8 @@ public class LacyPvETweaks(ISptLogger<LacyPvETweaks> logger,
             DynamicLocale = false,
             Type = "Elimination",
             Value = 1,
+            DoNotResetIfCounterCompleted = true,
+            OneSessionOnly = true,
             Counter = new()
             {
                 Conditions =
@@ -895,7 +901,7 @@ public class LacyPvETweaks(ISptLogger<LacyPvETweaks> logger,
             ConditionType = "CounterCreator",
             DynamicLocale = false,
             Type = "Elimination",
-            Value = 1,
+            Value = 3,
             Counter = new()
             {
                 Conditions =
@@ -911,8 +917,7 @@ public class LacyPvETweaks(ISptLogger<LacyPvETweaks> logger,
                         Id = new("663b9bde92a93ce2d8b0b835"),
                         SavageRole = ["bossPartisan"],
                         Target = new(null, "Savage"),
-                        Value = 1,
-                        ResetOnSessionEnd = true
+                        Value = 3
                     }
                 ]
             }
@@ -942,7 +947,7 @@ public class LacyPvETweaks(ISptLogger<LacyPvETweaks> logger,
                 localeData["67e6b6e2727d4a1492fcfe1c"] = "Eliminate Big Pipe in one raid";
                 localeData["68ebc2460d29c043fcbd49b9"] = "Eliminate Bird Eye in one raid";
                 // part6
-                localeData["68342446a8d674b5740b3200"] = "Eliminate Partisan in one raid without dying";
+                localeData["68342446a8d674b5740b3200"] = "Eliminate Partisan 3 times";
 
                 return localeData;
             });
