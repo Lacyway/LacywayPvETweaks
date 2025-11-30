@@ -809,7 +809,6 @@ public class LacyPvETweaks(ISptLogger<LacyPvETweaks> logger,
             DynamicLocale = false,
             Type = "Elimination",
             Value = 1,
-            DoNotResetIfCounterCompleted = true,
             OneSessionOnly = true,
             Counter = new()
             {
@@ -839,7 +838,6 @@ public class LacyPvETweaks(ISptLogger<LacyPvETweaks> logger,
             DynamicLocale = false,
             Type = "Elimination",
             Value = 1,
-            DoNotResetIfCounterCompleted = true,
             OneSessionOnly = true,
             Counter = new()
             {
@@ -869,7 +867,6 @@ public class LacyPvETweaks(ISptLogger<LacyPvETweaks> logger,
             DynamicLocale = false,
             Type = "Elimination",
             Value = 1,
-            DoNotResetIfCounterCompleted = true,
             OneSessionOnly = true,
             Counter = new()
             {
