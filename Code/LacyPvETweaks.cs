@@ -917,7 +917,7 @@ public class LacyPvETweaks(ISptLogger<LacyPvETweaks> logger,
                         Id = new("663b9bde92a93ce2d8b0b835"),
                         SavageRole = ["bossPartisan"],
                         Target = new(null, "Savage"),
-                        Value = 3
+                        Value = 1
                     }
                 ]
             }
