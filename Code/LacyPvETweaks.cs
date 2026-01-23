@@ -24,8 +24,8 @@ public record ModMetadata : AbstractModMetadata
     public override string Name { get; init; } = "Lacyway's PvE Tweaks";
     public override string Author { get; init; } = "Lacyway";
     public override List<string>? Contributors { get; init; }
-    public override SemanticVersioning.Version Version { get; init; } = new("1.1.0");
-    public override SemanticVersioning.Range SptVersion { get; init; } = new("~4.0.0");
+    public override SemanticVersioning.Version Version { get; init; } = new("1.2.0");
+    public override SemanticVersioning.Range SptVersion { get; init; } = new(">=4.0.11");
     public override List<string>? Incompatibilities { get; init; }
     public override Dictionary<string, SemanticVersioning.Range>? ModDependencies { get; init; }
     public override string? Url { get; init; }
@@ -237,13 +237,13 @@ public class LacyPvETweaks(ISptLogger<LacyPvETweaks> logger,
         }
 
         var labyrinth = customizations
-            .Where(c => c.SystemName.EndsWith("_Labyrinth"));
+            .Where(c => c.SystemName!.EndsWith("_Labyrinth"));
         var labyrinthIds = labyrinth
-            .Select(c => c.Conditions[0].Id);
+            .Select(c => c.Conditions![0].Id);
 
         foreach (var customization in labyrinth)
         {
-            var condition = customization.Conditions[0];
+            var condition = customization.Conditions![0];
             condition.ConditionType = "Quest";
             condition.AvailableAfter = 0;
             condition.Dispersion = 0;
@@ -253,13 +253,13 @@ public class LacyPvETweaks(ISptLogger<LacyPvETweaks> logger,
         }
 
         var kindergarten = customizations
-            .Where(c => c.SystemName.EndsWith("_Kindergarten"));
+            .Where(c => c.SystemName!.EndsWith("_Kindergarten"));
         var kindergartensId = kindergarten
-            .Select(c => c.Conditions[0].Id);
+            .Select(c => c.Conditions![0].Id);
 
         foreach (var customization in kindergarten)
         {
-            var condition = customization.Conditions[0];
+            var condition = customization.Conditions![0];
             condition.ConditionType = "Level";
             condition.AvailableAfter = 0;
             condition.Dispersion = 0;
@@ -331,7 +331,7 @@ public class LacyPvETweaks(ISptLogger<LacyPvETweaks> logger,
 
         List<QuestCondition> toClean = [];
         var punisherPt6 = quests[questsToClean[0]];
-        toClean.AddRange(punisherPt6.Conditions?.AvailableForFinish?
+        toClean.AddRange(punisherPt6!.Conditions?.AvailableForFinish?
             .Where(c => c.Counter?.Conditions?.Any(qc => qc.ConditionType == "Location") == true));
 
         var insomnia = quests[questsToClean[1]];
@@ -476,6 +476,13 @@ public class LacyPvETweaks(ISptLogger<LacyPvETweaks> logger,
         if (mallCopCond != null)
         {
             mallCopCond.Value = 5;
+        }
+
+        var huntsmanPerimeter = quests["5d25e2b486f77409de05bba0"];
+        var huntsmanPerimeterCond = huntsmanPerimeter.Conditions.AvailableForFinish?.FirstOrDefault();
+        if (huntsmanPerimeterCond != null)
+        {
+            huntsmanPerimeterCond.Value = 3;
         }
     }
 

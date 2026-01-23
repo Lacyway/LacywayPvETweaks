@@ -4,7 +4,7 @@
     <TargetFramework>net9.0</TargetFramework>
     <RootNamespace>LacyPvETweaks</RootNamespace>
     <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
+    <Nullable>disable</Nullable>
     <OutputType>Library</OutputType>
     <Version>0.0.1</Version>
     <!-- The two lines below will set the output path for the binaries -->
