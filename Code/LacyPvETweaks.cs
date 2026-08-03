@@ -1,45 +1,43 @@
+using System.Reflection;
+using SPTarkov.Common.Extensions;
+using SPTarkov.Common.Models.Logging;
 using SPTarkov.DI.Annotations;
 using SPTarkov.Server.Core.DI;
-using SPTarkov.Server.Core.Helpers;
+using SPTarkov.Server.Core.Helpers.Server;
 using SPTarkov.Server.Core.Models.Common;
-using SPTarkov.Server.Core.Models.Eft.Common;
 using SPTarkov.Server.Core.Models.Eft.Common.Tables;
 using SPTarkov.Server.Core.Models.Eft.Hideout;
 using SPTarkov.Server.Core.Models.Enums;
 using SPTarkov.Server.Core.Models.Enums.Hideout;
 using SPTarkov.Server.Core.Models.Spt.Config;
 using SPTarkov.Server.Core.Models.Spt.Mod;
-using SPTarkov.Server.Core.Models.Utils;
-using SPTarkov.Server.Core.Servers;
-using SPTarkov.Server.Core.Services;
+using SPTarkov.Server.Core.Models.Spt.Tables;
 using SPTarkov.Server.Core.Utils;
-using System.Reflection;
 using Path = System.IO.Path;
 
 namespace LacyPvETweaks;
 
-public record ModMetadata : AbstractModMetadata
+public sealed record ModData : IModMetadata
 {
-    public override string ModGuid { get; init; } = "com.lacyway.lpt";
-    public override string Name { get; init; } = "Lacyway's PvE Tweaks";
-    public override string Author { get; init; } = "Lacyway";
-    public override List<string> Contributors { get; init; }
-    public override SemanticVersioning.Version Version { get; init; } = new("1.2.0");
-    public override SemanticVersioning.Range SptVersion { get; init; } = new(">=4.0.11");
-    public override List<string> Incompatibilities { get; init; }
-    public override Dictionary<string, SemanticVersioning.Range> ModDependencies { get; init; }
-    public override string Url { get; init; }
-    public override bool? IsBundleMod { get; init; }
-    public override string License { get; init; } = "MIT";
+    public string ModGuid { get; init; } = "com.lacyway.lpt";
+    public string Name { get; init; } = "Lacyway's PvE Tweaks";
+    public string Author { get; init; } = "Lacyway";
+    public List<string> Contributors { get; init; } = ["Lacyway"];
+    public SemanticVersioning.Version Version { get; init; } = new("1.3.0");
+    public SemanticVersioning.Range SptVersion { get; init; } = new(">=4.1.0");
+    public bool HasPrepatcher { get; init; }
+    public List<string> Incompatibilities { get; init; }
+    public Dictionary<string, SemanticVersioning.Range> ModDependencies { get; init; }
+    public string Url { get; init; } = "https://github.com/Lacyway/LacywayPvETweaks";
+    public string License { get; init; } = "MIT";
 }
 
-[Injectable(TypePriority = OnLoadOrder.PostDBModLoader + 70000)]
-public class LacyPvETweaks(ISptLogger<LacyPvETweaks> logger,
-    DatabaseService databaseService, DatabaseServer databaseServer,
-    ConfigServer configServer, JsonUtil jsonUtil, ModHelper modHelper,
+[Injectable(TypePriority = OnLoadOrder.PostLoad)]
+public sealed class LacyPvETweaks(ISptLogger<LacyPvETweaks> logger, JsonUtil jsonUtil, GlobalTable globalTable, TemplateTable templateTable,
+    HideoutTable hideoutTable, LocaleTable localeTable, LocationTable locationTable, HideoutConfig hideoutConfig, ModHelper modHelper,
     IReadOnlyList<SptMod> sptMods) : IOnLoad
 {
-    public Task OnLoad()
+    public Task OnLoadAsync(CancellationToken cancellationToken)
     {
         string path;
         string configPath;
@@ -134,6 +132,8 @@ public class LacyPvETweaks(ISptLogger<LacyPvETweaks> logger,
             TweakASVal();
         }
 
+        ModifySkills();
+
         logger.Success("[Lacyway's PvE Tweaks] Successfully loaded!" +
             $"\nRef: {config.RefChanges}, Transits: {config.RemoveTransitQuests}, Recipes: {config.RemoveRecipes}," +
             $" Labyrinth: {config.EnableLabyrinth}, QuestsTweaks: {config.QuestTweaks}, AddRecipes: {config.AddRecipes}," +
@@ -143,13 +143,52 @@ public class LacyPvETweaks(ISptLogger<LacyPvETweaks> logger,
         return Task.CompletedTask;
     }
 
+    public void ModifySkills()
+    {
+        var globals = globalTable.Configuration;
+        var skillConfig = globals.SkillsSettings.GetAllPropertiesAsDictionary();
+
+        globals.SkillMinEffectiveness = 0.01d;
+        globals.SkillFatiguePerPoint = 0d;
+        globals.SkillFreshEffectiveness = 2.5d;
+        globals.SkillFreshPoints = 300d;
+        globals.SkillPointsBeforeFatigue = 1250d;
+        globals.SkillFatigueReset = 200d;
+
+        if (skillConfig.TryGetValue("Surgery", out var surgeryRaw) && surgeryRaw is Surgery surgery)
+        {
+            logger.Info("Multiplying Surgery by 20");
+            surgery.SkillProgress *= 20d;
+        }
+
+        if (skillConfig.TryGetValue("AimDrills", out var aimDrillsRaw) && aimDrillsRaw is AimDrills aimDrills)
+        {
+            logger.Info("Multiplying AimDrills by 15");
+            aimDrills.WeaponShotAction *= 15d;
+        }
+
+        if (skillConfig.TryGetValue("MagDrills", out var magDrillsRaw) && magDrillsRaw is MagDrills magDrills)
+        {
+            logger.Info("Multiplying MagDrills by 10");
+            magDrills.MagazineCheckAction *= 10d;
+            magDrills.RaidLoadedAmmoAction *= 10d;
+            magDrills.RaidUnloadedAmmoAction *= 10d;
+        }
+
+        if (skillConfig.TryGetValue("CovertMovement", out var covertMovementRaw) && covertMovementRaw is CovertMovement covertMovement)
+        {
+            logger.Info("Multiplying CovertMovement by 25");
+            covertMovement.MovementAction *= 25d;
+        }
+    }
+
     /// <summary>
     /// Tweaks the AS VAL to not be a volcano
     /// </summary>
     /// <remarks>Based on the values of the old mod 'Make Val VSS great again'</remarks>
     private void TweakASVal()
     {
-        var items = databaseService.GetItems();
+        var items = templateTable.Items;
 
         const float heatByShot = 2.17f;
         const float gunFactor = 0.98f;
@@ -228,8 +267,8 @@ public class LacyPvETweaks(ISptLogger<LacyPvETweaks> logger,
     /// </summary>
     private void UnlockableCustomizations()
     {
-        var customizations = databaseService.GetHideout().Customisation.Globals;
-        var globals = databaseServer.GetTables().Locales.Global;
+        var customizations = hideoutTable.Customisation.Globals;
+        var globals = localeTable.Global;
 
         if (customizations == null)
         {
@@ -297,7 +336,7 @@ public class LacyPvETweaks(ISptLogger<LacyPvETweaks> logger,
     /// </summary>
     private void TweakExtracts()
     {
-        var location = databaseService.GetLocation("labyrinth");
+        var location = locationTable.Labyrinth;
         var extract = location?.Base.Exits
             .SingleOrDefault(e => e.Name == "labir_exit");
         if (extract != null)
@@ -319,8 +358,8 @@ public class LacyPvETweaks(ISptLogger<LacyPvETweaks> logger,
     /// </summary>
     private void RemoveMapLimitations()
     {
-        var quests = databaseService.GetQuests();
-        var globals = databaseServer.GetTables().Locales.Global;
+        var quests = templateTable.Quests;
+        var globals = localeTable.Global;
 
         MongoId[] questsToClean = [
             new("59ca2eb686f77445a80ed049"), // punisher pt. 6
@@ -388,7 +427,7 @@ public class LacyPvETweaks(ISptLogger<LacyPvETweaks> logger,
     /// </summary>
     private void AddProductions()
     {
-        var recipes = databaseService.GetHideout().Production.Recipes;
+        var recipes = hideoutTable.Production.Recipes;
         recipes?.Add(new()
         {
             AreaType = HideoutAreas.IntelligenceCenter,
@@ -435,7 +474,7 @@ public class LacyPvETweaks(ISptLogger<LacyPvETweaks> logger,
     /// </summary>
     private void EditQuests()
     {
-        var quests = databaseService.GetQuests();
+        var quests = templateTable.Quests;
         var testDrivePt2 = quests["63a5cf262964a7488f5243ce"];
         var testDrivePt2Cond = testDrivePt2.Conditions.AvailableForFinish?.FirstOrDefault();
         if (testDrivePt2Cond != null)
@@ -491,8 +530,8 @@ public class LacyPvETweaks(ISptLogger<LacyPvETweaks> logger,
     /// </summary>
     private void EditTransits()
     {
-        var quests = databaseService.GetQuests();
-        var globals = databaseServer.GetTables().Locales.Global;
+        var quests = templateTable.Quests;
+        var globals = localeTable.Global;
 
         var transitQuests = quests
             .Where(q => q.Value?.Conditions?.AvailableForFinish?
@@ -586,7 +625,7 @@ public class LacyPvETweaks(ISptLogger<LacyPvETweaks> logger,
     /// </summary>
     private void EditLabyrinth()
     {
-        var labyrinth = databaseService.GetLocations().Labyrinth;
+        var labyrinth = locationTable.Labyrinth;
         labyrinth.Base.Enabled = true;
         labyrinth.Base.IconY = 250f;
         labyrinth.Base.DisabledForScav = true;
@@ -598,8 +637,7 @@ public class LacyPvETweaks(ISptLogger<LacyPvETweaks> logger,
     /// </summary>
     private void EditRecipes()
     {
-        var production = databaseService.GetHideout()
-            .Production;
+        var production = hideoutTable.Production;
 
         MongoId[] idsToRemove = [
             new("67c9d54b017035dd060bff5e"),
@@ -621,7 +659,7 @@ public class LacyPvETweaks(ISptLogger<LacyPvETweaks> logger,
         production.Recipes?
             .RemoveAll(x => idsToRemove.Contains(x.Id));
 
-        var config = configServer.GetConfig<HideoutConfig>();
+        var config = hideoutConfig;
 
         MongoId[] newCraftsToRemove = [
             new("67c5e55af344981d56050e7d"),
@@ -654,8 +692,8 @@ public class LacyPvETweaks(ISptLogger<LacyPvETweaks> logger,
             new("68342446a8d674b5740b31fc")
         ];
 
-        var quests = databaseService.GetQuests();
-        var globals = databaseServer.GetTables().Locales.Global;
+        var quests = templateTable.Quests;
+        var globals = localeTable.Global;
 
         var part1 = quests[refQuests[0]];
         part1.Conditions.AvailableForFinish!.Clear();
