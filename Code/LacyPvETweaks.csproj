@@ -33,7 +33,7 @@
 		<PropertyGroup>
 			<ReleaseDir>$(SolutionDir)\release</ReleaseDir>
 			<ZipPath>$(ReleaseDir)\$(ProjectName).zip</ZipPath>
-			<TempDir>$(ReleaseDir)\temp\SPT\user\mods\$(ProjectName)</TempDir>
+			<TempDir>$(ReleaseDir)\temp\SPT_Runtime\user\mods\$(ProjectName)</TempDir>
 			<OutputDll>$(TargetDir)$(ProjectName).dll</OutputDll>
 			<ConfigFile>$(ProjectDir)\config\config.jsonc</ConfigFile>
 			<LicenseFile>$(SolutionDir)\License.md</LicenseFile>
