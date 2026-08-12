@@ -23,8 +23,8 @@ public sealed record ModData : IModMetadata
     public string Name { get; init; } = "Lacyway's PvE Tweaks";
     public string Author { get; init; } = "Lacyway";
     public List<string> Contributors { get; init; } = ["Lacyway"];
-    public SemanticVersioning.Version Version { get; init; } = new("1.3.0");
-    public SemanticVersioning.Range SptVersion { get; init; } = new(">=4.1.0");
+    public SemanticVersioning.Version Version { get; init; } = new("1.3.1");
+    public SemanticVersioning.Range SptVersion { get; init; } = new(">=4.1.2");
     public bool HasPrepatcher { get; init; }
     public List<string> Incompatibilities { get; init; }
     public Dictionary<string, SemanticVersioning.Range> ModDependencies { get; init; }
@@ -33,7 +33,7 @@ public sealed record ModData : IModMetadata
 }
 
 [Injectable(TypePriority = OnLoadOrder.PostLoad)]
-public sealed class LacyPvETweaks(ISptLogger<LacyPvETweaks> logger, JsonUtil jsonUtil, GlobalTable globalTable, TemplateTable templateTable,
+public sealed class LacyPvETweaks(ISptLogger<LacyPvETweaks> logger, JsonUtil jsonUtil, TemplateTable templateTable,
     HideoutTable hideoutTable, LocaleTable localeTable, LocationTable locationTable, HideoutConfig hideoutConfig, ModHelper modHelper,
     IReadOnlyList<SptMod> sptMods) : IOnLoad
 {
@@ -132,8 +132,6 @@ public sealed class LacyPvETweaks(ISptLogger<LacyPvETweaks> logger, JsonUtil jso
             TweakASVal();
         }
 
-        ModifySkills();
-
         logger.Success("[Lacyway's PvE Tweaks] Successfully loaded!" +
             $"\nRef: {config.RefChanges}, Transits: {config.RemoveTransitQuests}, Recipes: {config.RemoveRecipes}," +
             $" Labyrinth: {config.EnableLabyrinth}, QuestsTweaks: {config.QuestTweaks}, AddRecipes: {config.AddRecipes}," +
@@ -141,45 +139,6 @@ public sealed class LacyPvETweaks(ISptLogger<LacyPvETweaks> logger, JsonUtil jso
             $" TweakASVal: {config.TweakASVal}");
 
         return Task.CompletedTask;
-    }
-
-    public void ModifySkills()
-    {
-        var globals = globalTable.Configuration;
-        var skillConfig = globals.SkillsSettings.GetAllPropertiesAsDictionary();
-
-        globals.SkillMinEffectiveness = 0.01d;
-        globals.SkillFatiguePerPoint = 0d;
-        globals.SkillFreshEffectiveness = 2.5d;
-        globals.SkillFreshPoints = 300d;
-        globals.SkillPointsBeforeFatigue = 1250d;
-        globals.SkillFatigueReset = 200d;
-
-        if (skillConfig.TryGetValue("Surgery", out var surgeryRaw) && surgeryRaw is Surgery surgery)
-        {
-            logger.Info("Multiplying Surgery by 20");
-            surgery.SkillProgress *= 20d;
-        }
-
-        if (skillConfig.TryGetValue("AimDrills", out var aimDrillsRaw) && aimDrillsRaw is AimDrills aimDrills)
-        {
-            logger.Info("Multiplying AimDrills by 15");
-            aimDrills.WeaponShotAction *= 15d;
-        }
-
-        if (skillConfig.TryGetValue("MagDrills", out var magDrillsRaw) && magDrillsRaw is MagDrills magDrills)
-        {
-            logger.Info("Multiplying MagDrills by 10");
-            magDrills.MagazineCheckAction *= 10d;
-            magDrills.RaidLoadedAmmoAction *= 10d;
-            magDrills.RaidUnloadedAmmoAction *= 10d;
-        }
-
-        if (skillConfig.TryGetValue("CovertMovement", out var covertMovementRaw) && covertMovementRaw is CovertMovement covertMovement)
-        {
-            logger.Info("Multiplying CovertMovement by 25");
-            covertMovement.MovementAction *= 25d;
-        }
     }
 
     /// <summary>
