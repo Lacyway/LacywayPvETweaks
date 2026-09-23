@@ -504,21 +504,28 @@ public sealed class LacyPvETweaks(ISptLogger<LacyPvETweaks> logger, JsonUtil jso
         for (var i = 0; i < transitQuests.Length; i++)
         {
             (var questId, var quest) = transitQuests[i];
-            var condition = quest.Conditions?.AvailableForFinish?
-                .FirstOrDefault(x => x.Counter?.Conditions?.Any(y => y.Status?.Count == 1 && y.Status.Contains("Transit")) == true);
+            var conditions = quest.Conditions?.AvailableForFinish?
+                .Where(x => x.Counter?.Conditions?.Any(y => y.Status?.Count == 1 && y.Status.Contains("Transit")) == true)
+                .ToList();
 
-            if (condition != null)
+            if (conditions.Count == 0)
             {
-                for (var j = 0; j < quest.Conditions?.AvailableForFinish?.Count; j++)
-                {
-                    var cond = quest.Conditions.AvailableForFinish[j];
-                    if (cond.OneSessionOnly.GetValueOrDefault())
-                    {
-                        cond.OneSessionOnly = false;
-                        localesToClean.Add(cond.Id);
-                    }
-                }
+                logger.Debug($"No transit conditions found in {questId}");
+                continue;
+            }
 
+            for (var j = 0; j < quest.Conditions?.AvailableForFinish?.Count; j++)
+            {
+                var cond = quest.Conditions.AvailableForFinish[j];
+                if (cond.OneSessionOnly.GetValueOrDefault())
+                {
+                    cond.OneSessionOnly = false;
+                    localesToClean.Add(cond.Id);
+                }
+            }
+
+            foreach (var condition in conditions)
+            {
                 logger.Debug("Found the condition");
                 if (condition.OneSessionOnly.GetValueOrDefault())
                 {
@@ -532,19 +539,23 @@ public sealed class LacyPvETweaks(ISptLogger<LacyPvETweaks> logger, JsonUtil jso
                 .Where(c => c.VisibilityConditions?.Count > 0)
                 .ToList();
 
+            var conditionIds = conditions
+                .Select(c => c.Id)
+                .ToHashSet();
+
             if (childConditions != null)
             {
                 foreach (var childCondition in childConditions)
                 {
                     var toRemove = childCondition.VisibilityConditions?
-                        .Where(vc => vc?.Target == condition?.Id)
+                        .Where(vc => conditionIds.Contains(vc.Target))
                         .ToList();
 
                     if (toRemove != null)
                     {
                         foreach (var removeCondition in toRemove)
                         {
-                            logger.Debug($"Removing visibility condition {condition?.Id}");
+                            logger.Debug($"Removing visibility condition {removeCondition?.Id}");
                             childCondition.VisibilityConditions?.Remove(removeCondition);
                         }
                     }
