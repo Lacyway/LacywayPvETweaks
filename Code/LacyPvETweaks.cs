@@ -23,8 +23,8 @@ public sealed record ModData : IModMetadata
     public string Name { get; init; } = "Lacyway's PvE Tweaks";
     public string Author { get; init; } = "Lacyway";
     public List<string> Contributors { get; init; } = ["Lacyway"];
-    public SemanticVersioning.Version Version { get; init; } = new("1.3.1");
-    public SemanticVersioning.Range SptVersion { get; init; } = new(">=4.1.2");
+    public SemanticVersioning.Version Version { get; init; } = new("1.3.2");
+    public SemanticVersioning.Range SptVersion { get; init; } = new(">=4.1.3");
     public bool HasPrepatcher { get; init; }
     public List<string> Incompatibilities { get; init; }
     public Dictionary<string, SemanticVersioning.Range> ModDependencies { get; init; }
